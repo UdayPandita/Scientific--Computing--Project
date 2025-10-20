@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Euler Family ODE Solver</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.plot.ly/plotly-2.26.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.11.0/math.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔬 Euler Family ODE Solver</h1>
+            <p class="subtitle">Solve Ordinary Differential Equations using various Euler methods</p>
+        </header>
+
+        <div class="main-content">
+            <!-- Input Section -->
+            <section class="input-section">
+                <h2>📝 Problem Setup</h2>
+                
+                <div class="form-group">
+                    <label for="ode-input">Enter ODE: dy/dx = f(x, y)</label>
+                    <input type="text" id="ode-input" placeholder="e.g., y - x^2 + 1" value="y - x^2 + 1">
+                    <small>Use ^ for powers. Examples: y - x^2 + 1, x*y, sin(x) + y, exp(x)</small>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="x0">Initial x (x₀)</label>
+                        <input type="number" id="x0" value="0" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label for="y0">Initial y (y₀)</label>
+                        <input type="number" id="y0" value="0.5" step="0.1">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="xn">Final x (xₙ)</label>
+                        <input type="number" id="xn" value="2" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label for="h">Step size (h)</label>
+                        <input type="number" id="h" value="0.2" step="0.01">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="has-exact">
+                        I have an exact solution
+                    </label>
+                </div>
+
+                <div class="form-group" id="exact-group" style="display: none;">
+                    <label for="exact-solution">Exact Solution: y(x)</label>
+                    <input type="text" id="exact-solution" placeholder="e.g., (x + 1)^2 - 0.5*exp(x)">
+                    <small>Use ^ for powers. Example: (x + 1)^2 - 0.5*exp(x)</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="method-select">Choose Method</label>
+                    <select id="method-select">
+                        <option value="euler">Euler</option>
+                        <option value="improved_euler">Improved Euler</option>
+                        <option value="modified_euler">Modified Euler</option>
+                        <option value="improved_modified_euler">Improved Modified Euler</option>
+                        <option value="aime">AIME</option>
+                    </select>
+                </div>
+
+                <button class="btn-solve" onclick="solveODE()">🚀 Solve ODE</button>
+                <button class="btn-compare" onclick="compareAllMethods()">📊 Compare All Methods</button>
+            </section>
+
+            <!-- Results Section -->
+            <section class="results-section" id="results-section" style="display: none;">
+                <h2>📈 Results</h2>
+                
+                <div class="tabs">
+                    <button class="tab-button active" onclick="showTab('plot')">Plot</button>
+                    <button class="tab-button" onclick="showTab('table')">Data Table</button>
+                    <button class="tab-button" onclick="showTab('errors')">Error Analysis</button>
+                </div>
+
+                <div id="plot-tab" class="tab-content active">
+                    <div id="plot-container"></div>
+                </div>
+
+                <div id="table-tab" class="tab-content">
+                    <div id="table-container"></div>
+                </div>
+
+                <div id="errors-tab" class="tab-content">
+                    <div id="error-stats"></div>
+                    <div id="error-plot-container"></div>
+                </div>
+            </section>
+
+            <!-- Comparison Section -->
+            <section class="comparison-section" id="comparison-section" style="display: none;">
+                <h2>📊 All Methods Comparison</h2>
+                
+                <div class="tabs">
+                    <button class="tab-button active" onclick="showComparisonTab('comparison-plot')">Solutions Plot</button>
+                    <button class="tab-button" onclick="showComparisonTab('error-comparison')">Error Comparison</button>
+                    <button class="tab-button" onclick="showComparisonTab('comparison-table')">Data Table</button>
+                </div>
+
+                <div id="comparison-plot-tab" class="tab-content active">
+                    <div id="comparison-plot-container"></div>
+                </div>
+
+                <div id="error-comparison-tab" class="tab-content">
+                    <div id="error-comparison-container"></div>
+                </div>
+
+                <div id="comparison-table-tab" class="tab-content">
+                    <div id="comparison-table-container"></div>
+                </div>
+            </section>
+        </div>
+
+        <footer>
+            <p>Created with ❤️ | Euler Family Methods: Euler, Improved Euler, Modified Euler, Improved Modified Euler, AIME</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

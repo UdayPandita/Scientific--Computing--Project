@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Math.js Test</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.11.0/math.min.js"></script>
+</head>
+<body>
+    <h1>Testing Math.js</h1>
+    <div id="output"></div>
+    
+    <script>
+        const output = document.getElementById('output');
+        
+        try {
+            // Test 1: Simple expression
+            const expr1 = "y - pow(x, 2) + 1";
+            const compiled1 = math.compile(expr1);
+            const result1 = compiled1.evaluate({ x: 0, y: 0.5 });
+            output.innerHTML += `<p>Test 1: ${expr1} at x=0, y=0.5 = ${result1}</p>`;
+            
+            // Test 2: Try with x^2
+            const expr2 = "y - x^2 + 1";
+            const compiled2 = math.compile(expr2);
+            const result2 = compiled2.evaluate({ x: 0, y: 0.5 });
+            output.innerHTML += `<p>Test 2: ${expr2} at x=0, y=0.5 = ${result2}</p>`;
+            
+        } catch (error) {
+            output.innerHTML += `<p style="color: red;">Error: ${error.message}</p>`;
+        }
+    </script>
+</body>
+</html>
