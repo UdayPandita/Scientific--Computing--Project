@@ -6,7 +6,13 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    /* Math-themed background: soft paper color, subtle color wash, graph-paper grid and faint math formulas */
+    background-color: #f5f7fb;
+    background-image:
+        linear-gradient(135deg, rgba(102,126,234,0.06), rgba(118,75,162,0.06)),
+        url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='800'><defs><pattern id='p' width='200' height='200' patternUnits='userSpaceOnUse'><rect width='200' height='200' fill='none'/><path d='M0 0 H200 M0 0 V200' stroke='%23999' stroke-width='0.5' opacity='0.25'/></pattern></defs><rect width='100%25' height='100%25' fill='url(%23p)'/><text x='40' y='80' font-family='Georgia, serif' font-size='32' fill='rgba(100,100,120,0.03)'>∫%20f(x)%20dx%20=%20F(x)</text><text x='240' y='240' font-family='Georgia, serif' font-size='28' fill='rgba(100,100,120,0.03)'>y'%20=%20y%20-%20x%5E2%20+%201</text><text x='120' y='420' font-family='Georgia, serif' font-size='28' fill='rgba(100,100,120,0.03)'>Σ_%7Bn%3D1%7D%5E%E2%88%9E%201%2Fn%5E2%20=%20π%5E2%2F6</text></svg>");
+    background-blend-mode: overlay, normal;
+    background-size: cover, 800px 800px;
     min-height: 100vh;
     padding: 20px;
     color: #333;
