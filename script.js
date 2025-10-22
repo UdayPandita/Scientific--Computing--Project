@@ -58,9 +58,13 @@ function improvedModifiedEuler(f, x0, y0, h, n) {
     const y = [y0];
     
     for (let i = 0; i < n; i++) {
-        const y_inner = y[i] + h * f(x[i], y[i]);
-        const y_mid = y[i] + (h / 2) * f(x[i], y_inner);
-        const y_next = y[i] + h * f(x[i] + h / 2, y_mid);
+        // Improved Modified Euler: y_{n+1} = y_n + h*k2
+        // where k1 = f(x_n, y_n)
+        //       k2 = f(x_n + h/2, y_n + (h/2)*f(x_n, y_n + h*k1))
+        const k1 = f(x[i], y[i]);
+        const y_inner = y[i] + h * k1;
+        const k2 = f(x[i] + h / 2, y[i] + (h / 2) * f(x[i], y_inner));
+        const y_next = y[i] + h * k2;
         const x_next = x[i] + h;
         x.push(x_next);
         y.push(y_next);
@@ -74,8 +78,11 @@ function aime(f, x0, y0, h, n) {
     const y = [y0];
     
     for (let i = 0; i < n; i++) {
-        const y_half = y[i] + (h / 2) * f(x[i], y[i]);
-        const y_next = y[i] + h * f(x[i] + h / 2, y_half);
+        // AIME: y_{n+1} = y_n + h*f(x_n + h/2, y_n + (h/2)*f(x_n, y_n + (h/2)*f(x_n, y_n)))
+        const k1 = f(x[i], y[i]);
+        const k2 = f(x[i], y[i] + (h / 2) * k1);
+        const k3 = f(x[i] + h / 2, y[i] + (h / 2) * k2);
+        const y_next = y[i] + h * k3;
         const x_next = x[i] + h;
         x.push(x_next);
         y.push(y_next);
@@ -381,17 +388,29 @@ function compareAllMethods() {
         'AIME': aime
     };
     
+    console.log('=== Compare All Methods Called ===');
+    console.log('Available methods:', Object.keys(methods));
+    
     allMethodsResults = {};
     
     for (const [name, method] of Object.entries(methods)) {
+        console.log(`\nCalling ${name}...`);
         const result = method(f, x0, y0, h, n);
         allMethodsResults[name] = result;
+        console.log(`  Generated ${result.y.length} points`);
+        console.log(`  First 3 y values: [${result.y.slice(0, 3).join(', ')}]`);
+        console.log(`  Last value: ${result.y[result.y.length - 1]}`);
+        console.log(`  Has NaN: ${result.y.some(v => isNaN(v))}`);
+        console.log(`  Has Infinity: ${result.y.some(v => !isFinite(v))}`);
     }
+    
+    console.log('\nAll methods results keys:', Object.keys(allMethodsResults));
     
     // Calculate exact solution or use AIME as reference
     if (exactFunc) {
         yExact = allMethodsResults['AIME'].x.map(x => exactFunc(x));
     } else {
+        // Use AIME as reference (most accurate higher-order method)
         yExact = allMethodsResults['AIME'].y;
     }
     
@@ -409,7 +428,7 @@ function displayComparison(results, yRef, hasExact) {
     plotAllSolutions(results, yRef, hasExact);
     
     // Plot error comparison
-    plotErrorComparison(results, yRef);
+    plotErrorComparison(results, yRef, hasExact);
     
     // Display comparison table
     displayComparisonTable(results, yRef, hasExact);
@@ -420,16 +439,42 @@ function plotAllSolutions(results, yRef, hasExact) {
     const colors = ['#667eea', '#f093fb', '#4facfe', '#43e97b', '#fa709a'];
     const traces = [];
     
+    console.log('\n=== Plotting All Solutions ===');
+    console.log('Results object keys:', Object.keys(results));
+    console.log('Results is array?:', Array.isArray(results));
+    console.log('Results type:', typeof results);
+    
+    // Check if Modified Euler specifically exists
+    console.log('Has "Modified Euler"?:', 'Modified Euler' in results);
+    console.log('Modified Euler data:', results['Modified Euler']);
+    
     let i = 0;
     for (const [name, result] of Object.entries(results)) {
-        traces.push({
+        console.log(`\n  Processing: ${name}`);
+        console.log(`    typeof result: ${typeof result}`);
+        console.log(`    Has x property: ${result && 'x' in result}`);
+        console.log(`    Has y property: ${result && 'y' in result}`);
+        
+        if (!result || !result.x || !result.y) {
+            console.error(`    ERROR: Invalid result structure for ${name}`);
+            continue;
+        }
+        
+        console.log(`    Data points: ${result.y.length}`);
+        console.log(`    Color: ${colors[i % colors.length]}`);
+        console.log(`    First 3 values: [${result.y.slice(0, 3).map(v => v.toFixed(4)).join(', ')}]`);
+        
+        const trace = {
             x: result.x,
             y: result.y,
             mode: 'lines+markers',
             name: name,
             line: { color: colors[i % colors.length], width: 2 },
             marker: { size: 5 }
-        });
+        };
+        
+        console.log(`    Created trace with name: "${trace.name}"`);
+        traces.push(trace);
         i++;
     }
     
@@ -442,6 +487,9 @@ function plotAllSolutions(results, yRef, hasExact) {
         line: { color: '#000', width: 2, dash: 'dash' }
     });
     
+    console.log(`\nTotal solution traces to plot: ${traces.length}`);
+    console.log('Trace names:', traces.map(t => t.name));
+    
     const layout = {
         title: 'Numerical Solutions for All Methods',
         xaxis: { title: 'x' },
@@ -450,27 +498,71 @@ function plotAllSolutions(results, yRef, hasExact) {
         showlegend: true
     };
     
-    Plotly.newPlot('comparison-plot-container', traces, layout);
+    console.log('\nCalling Plotly.newPlot...');
+    try {
+        Plotly.newPlot('comparison-plot-container', traces, layout);
+        console.log('✓ Plot rendered successfully');
+    } catch (error) {
+        console.error('✗ Plotly error:', error);
+    }
 }
 
 // Plot error comparison
-function plotErrorComparison(results, yRef) {
+function plotErrorComparison(results, yRef, hasExact) {
     const colors = ['#667eea', '#f093fb', '#4facfe', '#43e97b', '#fa709a'];
     const traces = [];
     
-    let i = 0;
+    console.log('\n=== Error Comparison Debug ===');
+    console.log('hasExact:', hasExact);
+    console.log('yRef length:', yRef ? yRef.length : 'undefined');
+    console.log('Results keys:', Object.keys(results));
+    
+    let colorIndex = 0;
     for (const [name, result] of Object.entries(results)) {
+        console.log(`\n  Processing errors for: ${name}`);
+        console.log(`    Result y length: ${result && result.y ? result.y.length : 'invalid'}`);
+        
+        // Skip AIME when it's being used as the reference (no exact solution)
+        if (!hasExact && name === 'AIME') {
+            console.log('    -> Skipping (used as reference)');
+            continue;
+        }
+        
+        if (!result || !result.y || !yRef) {
+            console.error(`    ERROR: Invalid data for ${name}`);
+            continue;
+        }
+        
         const errors = result.y.map((y, idx) => Math.abs(y - yRef[idx]));
-        traces.push({
+        
+        console.log(`    Sample errors: [${errors.slice(0, 3).map(e => e.toExponential(3)).join(', ')}...]`);
+        console.log(`    Has NaN: ${errors.some(e => isNaN(e))}`);
+        console.log(`    Has Infinity: ${errors.some(e => !isFinite(e))}`);
+        console.log(`    Max error: ${Math.max(...errors).toExponential(3)}`);
+        console.log(`    Min error: ${Math.min(...errors).toExponential(3)}`);
+        
+        // Replace zeros with a very small number for log scale plotting
+        const plotErrors = errors.map(e => {
+            if (isNaN(e) || !isFinite(e)) return 1e-16;
+            return e === 0 ? 1e-16 : e;
+        });
+        
+        const trace = {
             x: result.x,
-            y: errors,
+            y: plotErrors,
             mode: 'lines+markers',
             name: name + ' Error',
-            line: { color: colors[i % colors.length], width: 2 },
+            line: { color: colors[colorIndex % colors.length], width: 2 },
             marker: { size: 5 }
-        });
-        i++;
+        };
+        
+        console.log(`    -> Created error trace: "${trace.name}" (color index ${colorIndex})`);
+        traces.push(trace);
+        colorIndex++;
     }
+    
+    console.log(`\nTotal error traces: ${traces.length}`);
+    console.log('Error trace names:', traces.map(t => t.name));
     
     const layout = {
         title: 'Error Comparison (Reference as Baseline)',
@@ -480,7 +572,13 @@ function plotErrorComparison(results, yRef) {
         showlegend: true
     };
     
-    Plotly.newPlot('error-comparison-container', traces, layout);
+    console.log('\nCalling Plotly.newPlot for error comparison...');
+    try {
+        Plotly.newPlot('error-comparison-container', traces, layout);
+        console.log('✓ Error plot rendered successfully');
+    } catch (error) {
+        console.error('✗ Plotly error in error comparison:', error);
+    }
 }
 
 // Display comparison table
