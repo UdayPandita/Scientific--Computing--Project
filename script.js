@@ -328,18 +328,23 @@ function displayErrorAnalysis(results) {
         <div class="error-stat"><strong>Average Error:</strong> ${avgError.toExponential(6)}</div>
     `;
     
+    // Create iteration numbers array (0, 1, 2, ..., n)
+    const iterations = Array.from({ length: errors.length }, (_, i) => i);
+    
     const trace = {
-        x: results.x,
+        x: iterations,
         y: errors,
         mode: 'lines+markers',
         name: 'Absolute Error',
         line: { color: '#f5576c', width: 2 },
-        marker: { size: 6 }
+        marker: { size: 6 },
+        text: results.x.map((xVal, i) => `Iteration ${i}<br>x = ${xVal.toFixed(4)}<br>Error = ${errors[i].toExponential(4)}`),
+        hovertemplate: '%{text}<extra></extra>'
     };
     
     const layout = {
-        title: 'Absolute Error vs x',
-        xaxis: { title: 'x' },
+        title: 'Absolute Error vs Iteration',
+        xaxis: { title: 'Iteration Number' },
         yaxis: { title: 'Absolute Error', type: 'log' },
         hovermode: 'closest'
     };
@@ -547,13 +552,18 @@ function plotErrorComparison(results, yRef, hasExact) {
             return e === 0 ? 1e-16 : e;
         });
         
+        // Create iteration numbers array (0, 1, 2, ..., n)
+        const iterations = Array.from({ length: errors.length }, (_, i) => i);
+        
         const trace = {
-            x: result.x,
+            x: iterations,
             y: plotErrors,
             mode: 'lines+markers',
             name: name + ' Error',
             line: { color: colors[colorIndex % colors.length], width: 2 },
-            marker: { size: 5 }
+            marker: { size: 5 },
+            text: result.x.map((xVal, i) => `${name}<br>Iteration ${i}<br>x = ${xVal.toFixed(4)}<br>Error = ${errors[i].toExponential(4)}`),
+            hovertemplate: '%{text}<extra></extra>'
         };
         
         console.log(`    -> Created error trace: "${trace.name}" (color index ${colorIndex})`);
@@ -566,7 +576,7 @@ function plotErrorComparison(results, yRef, hasExact) {
     
     const layout = {
         title: 'Error Comparison (Reference as Baseline)',
-        xaxis: { title: 'x' },
+        xaxis: { title: 'Iteration Number' },
         yaxis: { title: 'Absolute Error', type: 'log' },
         hovermode: 'closest',
         showlegend: true
